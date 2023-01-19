@@ -1,0 +1,26 @@
+  library(sf)
+  library(rnaturalearth)
+  library(data.table)
+  library(dplyr)
+  w <- ne_countries(scale = "medium", returnclass = "sf")
+  dd<- as.data.frame(w)
+  dd1<- dd %>% select(admin,postal)
+  colnames(dd1)<- c("Country","Country Code")
+  setnames(dd,"admin","Country")
+  setnames(dd,"postal","Country Code")
+  df<- readxl::read_xlsx("../Downloads/Country Wise Demand & FA change CV.xlsx")
+  
+  
+  ab<- merge(dd,df,by=c("Country Code"))
+  abb<- ab %>% select(-c(Country.y,val,`Val 1`,`Oct FA`,`Nov FA`))
+  setnames(abb,"Country.x","Country")
+  #aab<- abb %>% select(Country.x,`October FA`,`November FA`,`FA Change`)
+  library(mapview) |> suppressPackageStartupMessages()
+  mapviewOptions(fgb = FALSE)
+  abc<- st_as_sf(x=abb)
+  abcd<- abc %>% select(Country,`November FA`,`October FA`,`FA Change`,CCG)
+  abcd |> mapview(zcol = c("November FA"), legend = TRUE, col.regions = sf.colors())
+  final<- abcd
+  final |> mapview(zcol = c("November FA"), legend = TRUE, col.regions = sf.colors,popup = popupTable(final, zcol = c("CCG","November FA")))  
+  
+  
